@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>HuXa AI · Flop Labs Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fde7ef; --bg-deep:#f9cfde; --ink:#3a1230; --muted:#7a4a6a;
+  --accent:#c2185b; --accent-ink:#fff; --card:#fff8fb; --line:#f0b6cc;
+  --user:#3a1230; --user-ink:#fff5f9;
+  --head:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root[data-theme="dark"],:root:not([data-theme="light"]){color-scheme:light}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{max-width:760px;margin:0 auto;padding:20px 16px 12px;display:flex;flex-direction:column;min-height:100vh}
+header{padding:8px 0 16px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:46px;height:46px;border-radius:14px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--head);font-weight:800;font-size:20px;flex:none}
+h1{font-family:var(--head);font-weight:800;font-size:clamp(26px,6vw,36px);line-height:1.05;margin:0;letter-spacing:-.02em}
+.sub{margin:2px 0 0;color:var(--muted);font-size:14px}
+.source{margin:14px 0 0;padding:10px 14px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;font-size:14px}
+.source strong{font-weight:600}
+#log{flex:1;display:flex;flex-direction:column;gap:12px;padding:8px 0 16px}
+.msg{max-width:92%;padding:12px 15px;border-radius:16px;overflow-wrap:anywhere}
+.bot{align-self:flex-start;background:var(--card);border:1.5px solid var(--line);border-top-left-radius:4px}
+.you{align-self:flex-end;background:var(--user);color:var(--user-ink);border-top-right-radius:4px}
+.msg h2{font-family:var(--head);font-size:18px;margin:0 0 6px;line-height:1.2}
+.msg h3{font-family:var(--head);font-size:15px;margin:14px 0 4px}
+.msg p{margin:6px 0}
+.msg ul{margin:6px 0;padding-left:20px}
+.msg li{margin:3px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.stat{background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px}
+.stat b{display:block;font-family:var(--head);font-size:22px;color:var(--accent);line-height:1.1}
+.stat span{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 12px}
+.chip{font:inherit;font-size:14px;font-weight:500;padding:8px 13px;border-radius:999px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+.chip:hover{background:var(--accent);color:var(--accent-ink)}
+.composer{position:sticky;bottom:0;padding:10px 0 6px;background:linear-gradient(to top,var(--bg) 78%,transparent)}
+.row{display:flex;gap:8px}
+input[type=text]{flex:1;min-width:0;font:inherit;padding:13px 15px;border-radius:14px;border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+.send{font:inherit;font-weight:600;padding:0 20px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.send:hover{background:#a3134c}
+footer{padding:14px 0 6px;text-align:center;font-size:13px;color:var(--muted)}
+.typing{display:inline-flex;gap:4px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:b 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,60%,100%{opacity:.25}30%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="mark" aria-hidden="true">Hx</div>
+      <div>
+        <h1>HuXa AI</h1>
+        <p class="sub">Your guide to Flop Labs and the FLOP network</p>
+      </div>
+    </div>
+    <p class="source">Based on data by Flop Labs website: <a href="https://flop.finance/" target="_blank" rel="noopener">https://flop.finance/</a> <strong>(Draft whitepaper, updated 2026-08-27)</strong></p>
+  </header>
+
+  <main id="log" aria-live="polite"></main>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="composer">
+    <div class="row">
+      <input type="text" id="q" placeholder="Ask HuXa AI about FLOP…" aria-label="Ask a question" autocomplete="off">
+      <button class="send" id="send">Send</button>
+    </div>
+  </div>
+
+  <footer>
+    &copy; <span id="yr">2026</span> HuXa Corporation &middot; <a href="https://x.com/0gHuXa" target="_blank" rel="noopener">X: @0gHuXa</a>
+  </footer>
+</div>
+
+<script>
+const LINK = '<a href="https://flop.finance/" target="_blank" rel="noopener">https://flop.finance/</a>';
+const SRC = '<p><small>Source: Flop Labs website, ' + LINK + '</small></p>';
+
+const KB = [
+ { id:'overview', label:'What is FLOP?', keys:['what is flop','flop','about','intro','project','flop labs','currency','agentic economy','overview','who','what'],
+   html:`<h2>The currency of the agentic economy</h2>
+   <p>FLOP is the <b>proof-of-useful-inference (PoUI) blockchain</b> and native currency for the agentic economy. Agents pay miners in FLOP to run inference, converting currency directly into compute and intelligence.</p>
+   <ul>
+    <li>AI agents are a new economic life form, and they need a currency to ration scarce compute.</li>
+    <li>FLOP stands for floating-point operations: spend FLOP, get inference. Currency converts into compute.</li>
+    <li>It is a PoUI plus account-based chain: miners run verified inference, validators settle the proofs.</li>
+   </ul>` },
+ { id:'why', label:'Why do agents need FLOP?', keys:['why','need','agents need','money','labour','labor','metcalfe','reed','sub-economies','value'],
+   html:`<h2>Why agents need FLOP</h2>
+   <p>Humans exchange labour for money because money buys food and shelter. Agents consume compute and produce intelligence, so the money of the agentic economy must buy compute. FLOP does exactly that: at any point it converts into inference.</p>
+   <ul>
+    <li>Compute is what agents require to exist. They consume it and produce intelligence.</li>
+    <li>Any time it wants, an agent converts FLOP into compute by tasking a miner with inference.</li>
+    <li>Network value scales from N² (Metcalfe) toward 2^N (Reed) as agents form sub-economies.</li>
+   </ul>` },
+ { id:'how', label:'How does the network work?', keys:['how','network','work','works','poui','proof of useful','proof-of-useful','mempool','session','gpu','gpus','confidential','account-based'],
+   html:`<h2>How the network works</h2>
+   <p>FLOP combines proof-of-useful-inference with an account-based send-and-receive chain. Agents post a session request to the mempool; a capable miner runs it and returns a proof; validators fold each proof hash into a block. Ordinary GPUs qualify. Confidential computing is an optional tier, not an entry requirement.</p>
+   <ul>
+    <li>A session request pins a model-weight hash, max latency, compute in FLOPs, a confidentiality flag, and the FLOP fee.</li>
+    <li>Miners accept, execute, and earn the session payment plus a share of the miner block-reward pool, weighted by the verified compute they contribute.</li>
+    <li>Validators build blocks of proof hashes, store model weights in the data-availability layer, and share 10% of block rewards.</li>
+   </ul>` },
+ { id:'path', label:'Execution path (4 steps)', keys:['step','steps','execution','path','flow','process','request','match','prove','settle','lifecycle'],
+   html:`<h2>Execution path</h2>
+   <ul>
+    <li><b>1. Request:</b> the agent posts a session request to the mempool with model hash, latency, FLOPs, confidentiality, and fee.</li>
+    <li><b>2. Match:</b> a miner with capable hardware accepts and opens a secure, private connection with the agent.</li>
+    <li><b>3. Prove:</b> the miner completes the inference and submits the proof of useful inference.</li>
+    <li><b>4. Settle:</b> validators include the proof hash in a block; the miner earns the session payment and a share of the block reward.</li>
+   </ul>` },
+ { id:'block', label:'Block time & reward', keys:['block','time','reward','rewards','halving','halvings','96','finality','sub-second','emission','supply','1 s','second'],
+   html:`<h2>Block time and block reward</h2>
+   <div class="stats">
+    <div class="stat"><b>1 s</b><span>Average block time</span></div>
+    <div class="stat"><b>96 FLOP</b><span>Starting block reward</span></div>
+    <div class="stat"><b>1,000</b><span>Validator set cap</span></div>
+   </div>
+   <ul>
+    <li>One-second average blocks with deterministic sub-second finality. The roadmap targets sub-one-second block times.</li>
+    <li>The block reward halves every 730 days for five halvings: 96, 48, 24, 12, 6, then 3 FLOP.</li>
+    <li>After that it stays constant at 3 FLOP in perpetuity.</li>
+    <li>Validators share 10% of block rewards; miners share the miner block-reward pool weighted by verified compute.</li>
+   </ul>` },
+ { id:'miner', label:'Miners', keys:['miner','miners','mining','mine','hardware','earn','earning'],
+   html:`<h2>Miners</h2>
+   <ul>
+    <li>Miners run verified inference for agents. Ordinary GPUs qualify; confidential computing is an optional tier.</li>
+    <li>They accept a session, open a secure private connection with the agent, complete the inference, and submit the proof.</li>
+    <li>They earn the session payment plus a share of the miner block-reward pool, weighted by verified compute contributed.</li>
+    <li>Becoming a miner requires staking FLOP, and stake can be slashed for dishonesty.</li>
+   </ul>
+   <p>For full miner details, check at ${LINK}</p>` },
+ { id:'validator', label:'Validators', keys:['validator','validators','validate','1000','1,000','rotate','rank','uptime','liveness','data-availability','availability','weights'],
+   html:`<h2>Validators</h2>
+   <ul>
+    <li>Validators build blocks of proof hashes and settle proofs on the chain.</li>
+    <li>They store model weights in the data-availability layer and share 10% of block rewards.</li>
+    <li>The validator set is capped at 1,000 in the spec. Roughly 50 rotate each month on verification liveness and uptime.</li>
+    <li>Planned: rank validators by stake above that floor.</li>
+    <li>Validators are the guardians of the network and govern it through FLOP Improvement Proposals.</li>
+   </ul>
+   <p>For full validator details, check at ${LINK}</p>` },
+ { id:'stake', label:'Staking & slashing', keys:['stake','staking','slash','slashing','delegate','delegation','delegating','ban','penalty','dishonest'],
+   html:`<h2>Stake, slashing, and delegation</h2>
+   <ul>
+    <li>Miners and validators must stake FLOP, and stake is subject to slashing for dishonesty.</li>
+    <li>Lying about work or publishing dishonest blocks risks draconian slashing, up to full loss of stake and a ban.</li>
+    <li>Holders can delegate stake to a validator or miner and share rewards proportionally.</li>
+   </ul>` },
+ { id:'gov', label:'Governance (FIPs)', keys:['governance','govern','fip','fips','proposal','proposals','vote','voting','improvement','two thirds','2/3','approve'],
+   html:`<h2>Governance</h2>
+   <ul>
+    <li>Governance runs on FIPs (FLOP Improvement Proposals).</li>
+    <li>In most cases, two thirds of the active validator set must approve a proposal before it is implemented.</li>
+    <li>Validators, as guardians of the network, drive this process.</li>
+   </ul>` },
+ { id:'everything', label:'Tell me everything', keys:['everything','all','full','complete','summary','summarize','explain all','all information','all info','details','whole'],
+   html:null }
+];
+
+const OTHER_TOPICS = ['verification','revenue','revenue model','teaser','yellow paper','yellowpaper','gpu market','price','token','tokenomics','buy','exchange','listing','team','roadmap','launch','mainnet','testnet','airdrop','contact','discord','twitter','telegram','whitepaper'];
+
+const ids = ['overview','why','how','path','block','miner','validator','stake','gov'];
+
+function everything(){
+  let out = '<h2>Everything about Flop Labs / FLOP</h2><p>Here is the full project intro from the draft whitepaper.</p>';
+  ids.forEach(i=>{ const k = KB.find(x=>x.id===i); out += k.html.replace(/<h2>/,'<h3>').replace(/<\/h2>/,'</h3>'); });
+  out += '<h3>More sections on the site</h3><p>The Flop Labs site also has pages on Verification, Revenue model, Teaser, Yellow paper, and GPU market. For those, check at ' + LINK + '</p>';
+  return out;
+}
+
+function answer(text){
+  const t = text.toLowerCase().trim();
+  if(!t) return null;
+  if(/^(hi|hello|hey|gm|yo|hola)\b/.test(t)) return `<p>Hi, I'm <b>HuXa AI</b>. Ask me anything about Flop Labs and the FLOP network, or tap one of the topics below.</p>`;
+  if(OTHER_TOPICS.some(w=>t.includes(w)) && !/(block reward|staking|stake)/.test(t)) return `<p>Check At ${LINK}</p>`;
+  let best=null, score=0;
+  KB.forEach(k=>{
+    let s=0;
+    k.keys.forEach(w=>{ if(t.includes(w)) s += (w.length>3?2:1) + (w.split(' ').length>1?2:0); });
+    if(k.id==='everything' && s>0) s += 3;
+    if(s>score){score=s;best=k;}
+  });
+  if(!best || score<2) return `<p>Check At ${LINK}</p>`;
+  return (best.id==='everything' ? everything() : best.html) + SRC;
+}
+
+const log = document.getElementById('log');
+function add(cls, html){
+  const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=html; log.appendChild(d);
+  d.scrollIntoView({behavior:'smooth',block:'end'}); return d;
+}
+function ask(text){
+  if(!text.trim()) return;
+  add('you', text.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])));
+  const t = add('bot','<span class="typing"><i></i><i></i><i></i></span>');
+  setTimeout(()=>{ t.innerHTML = answer(text) || '<p>Check At '+LINK+'</p>'; t.scrollIntoView({behavior:'smooth',block:'end'}); }, 450);
+}
+
+const chips = document.getElementById('chips');
+['Tell me everything','What is FLOP?','Why do agents need FLOP?','How does the network work?','Execution path (4 steps)','Block time & reward','Miners','Validators','Staking & slashing','Governance (FIPs)'].forEach(l=>{
+  const b=document.createElement('button'); b.className='chip'; b.textContent=l;
+  b.onclick=()=>ask(l==='Tell me everything'?'everything':l); chips.appendChild(b);
+});
+
+const q=document.getElementById('q');
+function go(){ const v=q.value; q.value=''; ask(v); }
+document.getElementById('send').onclick=go;
+q.addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+add('bot', `<h2>Hi, I'm HuXa AI</h2><p>I can tell you everything about <b>Flop Labs</b> and the <b>FLOP</b> proof-of-useful-inference network, based on the Flop Labs website (${LINK}).</p><p>Tap <b>Tell me everything</b> for the full picture, or ask about a specific part. For anything else, I'll point you to the official site.</p>`);
+</script>
+</body>
+</html>
